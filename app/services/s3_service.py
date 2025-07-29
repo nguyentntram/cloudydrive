@@ -2,6 +2,8 @@ import boto3
 import os
 from dotenv import load_dotenv
 from datetime import datetime
+from botocore.exceptions import ClientError
+from app.config import S3_BUCKET_NAME, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
 
 load_dotenv()
 
@@ -29,3 +31,11 @@ def upload_file_to_s3(file):
 
 def generate_upload_url(file_name: str):
     return "https://dummy-upload-url.com", f"files/{file_name}"
+
+def delete_file_from_s3(file_key: str) -> bool:
+    try:
+        s3.delete_object(Bucket=S3_BUCKET_NAME, Key=file_key)
+        return True
+    except ClientError as e:
+        print(f"Error deleting file from S3: {e}")
+        return False

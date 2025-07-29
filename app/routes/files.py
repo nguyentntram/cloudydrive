@@ -1,6 +1,6 @@
 # API endpoints
-from fastapi import APIRouter, UploadFile, File
-from app.services.s3_service import upload_file_to_s3, generate_upload_url
+from fastapi import APIRouter, UploadFile, File, HTTPException
+from app.services.s3_service import upload_file_to_s3, generate_upload_url, delete_file_from_s3
 
 # Assign the /files prefix to the routes in this file
 router = APIRouter(prefix="/files", tags=["Files"]) # help modularize routes
@@ -31,3 +31,25 @@ def get_all_files():
     files = db.query(FileMetadata).order_by(FileMetadata.upload_time.desc()).all()
     db.close()
     return files
+
+@router.delete("/{file_id}")
+def delete_file(file_id: str):
+    db: Session = SessionLocal()
+    file = db.query(FileMetadata).filter(FileMetadata.id == file_id).first()
+
+    if not file:
+        db.close()
+        raise HTTPException(status_code=404, detail="File not found")
+
+    # delete in S3
+    deleted_from_s3 = delete_file_from_s3(file.s3_key)
+    if not deleted_from_s3:
+        db.close()
+        raise HTTPException(status_code=500, detail="Failed to delete file from S3")
+
+    # delete in DB
+    db.delete(file)
+    db.commit()
+    db.close()
+
+    return {"message": "File deleted successfully"}
