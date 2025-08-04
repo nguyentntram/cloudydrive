@@ -17,8 +17,25 @@ def get_upload_url(fileName: str):
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
     url, key = upload_file_to_s3(file)
-    return {"s3Url": url, "s3Key": key}
+    db: Session = SessionLocal()
+    new_file = FileMetadata(
+        filename=file.filename,
+        s3_key=key,
+        upload_time=datetime.utcnow()
+    )
+    db.add(new_file)
+    db.commit()
+    db.refresh(new_file)
+    db.close()
 
+    return {
+        "id": new_file.id,
+        "filename": new_file.filename,
+        "s3Key": new_file.s3_key,
+        "uploadTime": new_file.upload_time
+    }
+
+from datetime import datetime
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
 from app.models.file import FileMetadata
