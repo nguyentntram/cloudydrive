@@ -8,11 +8,7 @@ app = FastAPI()
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # dev local
-        "https://cloudydrive-frontend.vercel.app",  # production domain
-    ],
-    allow_origin_regex=r"^https://.*\.vercel\.app$",  # allow preview deployments
+    allow_origins=["http://localhost:3000"],  # chỉ cho frontend này gọi
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,4 +19,8 @@ app.include_router(files_router)
 
 @app.get("/")
 def read_root():
-    return {"message": "CloudyDrive API is live!"}
+    return {"message": "CloudyDrive API is live!"}  # for testing
+
+# Initializes FastAPI app
+
+# Includes the /files router
