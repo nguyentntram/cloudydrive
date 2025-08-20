@@ -2,6 +2,7 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.services.s3_service import upload_file_to_s3, generate_upload_url, delete_file_from_s3, generate_download_url
 
+from sqlalchemy import or_
 from datetime import datetime
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
@@ -57,14 +58,62 @@ async def upload_file(file: UploadFile = File(...)):
         db.close()
 
 @router.get("/list", response_model=List[FileOut])
+
 def get_all_files():
     db: Session = SessionLocal()
     try:
         files = db.query(FileMetadata).order_by(FileMetadata.upload_time.desc()).all()
+
+        s3 = boto3.client("s3")
+        bucket_name = "cloudydrive-tram"
+
+        result = []
+        for f in files:
+            filesize = f.filesize
+            if not filesize:  # None or 0
+                try:
+                    head = s3.head_object(Bucket=bucket_name, Key=f.s3_key)
+                    filesize = head['ContentLength']
+                except Exception:
+                    filesize = 0
+
+            result.append({
+                "id": str(f.id),
+                "filename": f.filename,
+                "s3_key": f.s3_key,
+                "filetype": f.filetype,
+                "filesize": filesize,
+                "upload_time": f.upload_time
+            })
+
+        return result
+    finally:
+        db.close()
+
+@router.get("/documents", response_model=List[FileOut])
+def get_documents():
+    document_exts = ["pdf", "doc", "docx", "xls", "xlsx", "txt", "csv"]
+
+    db: Session = SessionLocal()
+    try:
+        files = db.query(FileMetadata).filter(
+            or_(*[FileMetadata.filename.ilike(f"%.{ext}") for ext in document_exts])
+        ).order_by(FileMetadata.upload_time.desc()).all()
         return files
     finally:
         db.close()
-    
+
+@router.get("/images", response_model=List[FileOut])
+def get_images():
+    image_exts = ["jpg", "jpeg", "png", "gif", "webp", "bmp"]
+    db: Session = SessionLocal()
+    try:
+        files = db.query(FileMetadata).filter(
+            or_(*[FileMetadata.filename.ilike(f"%.{ext}") for ext in image_exts])
+        ).order_by(FileMetadata.upload_time.desc()).all()
+        return files
+    finally:
+        db.close()
 
 @router.delete("/{file_id}")
 def delete_file(file_id: str):
