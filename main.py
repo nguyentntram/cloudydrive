@@ -24,3 +24,7 @@ app.include_router(files_router)
 @app.get("/")
 def read_root():
     return {"message": "CloudyDrive API is live!"}
+
+@app.get("/cors-test")
+def cors_test():
+    return {"ok": True}
