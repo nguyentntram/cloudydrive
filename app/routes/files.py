@@ -1,6 +1,7 @@
 # API endpoints
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.services.s3_service import upload_file_to_s3, generate_upload_url, delete_file_from_s3, generate_download_url
+from datetime import datetime, timezone
 
 from sqlalchemy import or_
 from datetime import datetime
@@ -39,7 +40,7 @@ async def upload_file(file: UploadFile = File(...)):
             filetype=file.content_type,
             filesize=file_size,
             s3_key=key,
-            upload_time=datetime.utcnow()
+            upload_time=datetime.now(timezone.utc)
         )
         db.add(new_file)
         db.commit()
@@ -165,7 +166,7 @@ def register_file(meta: FileRegisterIn):
             filetype=meta.fileType,
             filesize=meta.fileSize,
             s3_key=meta.s3Key,
-            upload_time=datetime.utcnow()
+            upload_time=datetime.now(timezone.utc)
         )
         db.add(new_file)
         db.commit()

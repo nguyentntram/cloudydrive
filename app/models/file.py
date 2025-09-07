@@ -1,6 +1,6 @@
 # app/models/file.py
 # Database table
-from sqlalchemy import Column, String, DateTime, Integer
+from sqlalchemy import Column, String, DateTime, Integer, func
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 import uuid # use uuid to create unique ID for each file
@@ -15,6 +15,6 @@ class FileMetadata(Base):
     s3_key = Column(String, nullable=False) # S3 path (in the form of uploads/abc.jpg)
     filetype = Column(String, nullable=True)
     filesize = Column(Integer, nullable=True)
-    upload_time = Column(DateTime, default=datetime.utcnow) # to store upload time
+    upload_time = Column(DateTime(timezone=True), nullable=False, server_default=func.now()) # to store upload time
 
 # store file info to PostgreSQL when uploading to S3
