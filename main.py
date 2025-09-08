@@ -20,10 +20,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.on_event("startup")
-def _create_tables():
-    Base.metadata.create_all(bind=engine)
-
 # router
 app.include_router(files_router)
 
