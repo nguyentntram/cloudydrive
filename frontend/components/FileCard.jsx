@@ -65,7 +65,12 @@ export default function FileCard({ file }) {
         </div>
         <div className="mt-3 font-medium line-clamp-1">{file.name}</div>
         <div className="mt-1 text-slate-500 text-sm">{fmtBytes(file.size)}</div>
-        <div className="mt-auto pt-3 text-slate-400 text-xs">{fmtTime(file.uploaded_at)}</div>
+        <div className="mt-auto pt-3 text-slate-400 text-xs">
+          {/* {fmtTime(file.uploaded_at)} */}
+          <span suppressHydrationWarning>
+            {uploadedAt ? fmtTime(uploadedAt) : ''}
+          </span>
+        </div>
       </div>
 
       {previewing && (

@@ -9,6 +9,7 @@ export const fmtBytes = (b = 0) => {
 //   iso ? new Date(iso).toLocaleString([], { hour: '2-digit', minute: '2-digit' }) : '';
 export const fmtTime = (iso) => {
   if (!iso) return '';
+  if (typeof window === 'undefined') return '';
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone; // ví dụ "America/Chicago"
   return new Date(iso).toLocaleString(undefined, {
     timeZone: tz,

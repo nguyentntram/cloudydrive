@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useFiles } from "@/hooks/useFiles";
 import { filesApi } from "@/lib/api";
 import PreviewModal from "@/components/PreviewModal";
+import { fmtTime } from "@/lib/format";
 
 export default function RecentList({ files }) {
   const { remove } = useFiles();
@@ -37,7 +38,10 @@ export default function RecentList({ files }) {
               <div>
                 <div className="font-medium">{name}</div>
                 <div className="text-sm text-slate-500">
-                  {uploadedAt ? new Date(uploadedAt).toLocaleString() : ""}
+                  {/* {uploadedAt ? new Date(uploadedAt).toLocaleString() : ""} */}
+                  <span suppressHydrationWarning>
+                    {uploadedAt ? fmtTime(uploadedAt) : ""}
+                  </span>
                 </div>
               </div>
 
